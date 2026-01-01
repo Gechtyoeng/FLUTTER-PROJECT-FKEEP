@@ -1,11 +1,7 @@
-import '../../model/enums/category.dart';
-import '../../model/enums/units.dart';
-import '../../model/enums/product_status.dart';
-import '../../model/enums/shopping_status.dart';
-import '../../model/models/product_history_model.dart';
-import '../../model/models/product_model.dart';
-import '../../model/models/shopping_item_model.dart';
-import '../../model/models/shopping_list_model.dart';
+import '../../models/product_history_model.dart';
+import '../../models/product_model.dart';
+import '../../models/shopping_item_model.dart';
+import '../../models/shopping_list_model.dart';
 
 /// Mock fridge products
 final mockProducts = [

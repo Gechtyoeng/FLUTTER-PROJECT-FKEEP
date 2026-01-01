@@ -1,8 +1,14 @@
 import 'package:uuid/uuid.dart';
+//Enum classes for product model
+// Food categories
+enum Category { vegetable, meat, fruit, other }
 
-import '../enums/category.dart';
-import '../enums/product_status.dart';
-import '../enums/units.dart';
+//Product status
+enum ProductStatus { inFridge, eaten, wasted}
+
+//Product units
+enum Units { grams, kg, pack, can, bags, pcs, loaf }
+
 
 class Product {
   final String productId;

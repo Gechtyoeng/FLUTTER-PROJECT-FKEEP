@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../model/models/product_model.dart';
+import '../../models/product_model.dart';
 
 class ProductRepository {
   static const _storageKey = 'fridge_products';

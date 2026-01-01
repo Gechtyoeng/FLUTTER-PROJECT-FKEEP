@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../model/models/shopping_list_model.dart';
+import '../../models/shopping_list_model.dart';
 
 class ShoppingRepository {
   static const _storageKey = 'shopping_list';

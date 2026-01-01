@@ -1,9 +1,9 @@
 import 'package:uuid/uuid.dart';
-import '../enums/category.dart';
-import '../enums/units.dart';
-import '../enums/product_status.dart';
-import '../enums/shopping_status.dart';
 import 'product_model.dart';
+
+//Enum fir shooping status
+enum ShoppingStatus { pending, progess, purchased }
+
 
 class ShoppingItem {
   final String shoppingItemId;
@@ -44,6 +44,7 @@ class ShoppingItem {
     status: ShoppingStatus.values.firstWhere((e) => e.name == json['status']),
     category: Category.values.firstWhere((e) => e.name == json['category']),
   );
+  
   Map<String, dynamic> toJson() => {
     'shoppingItemId': shoppingItemId,
     'itemName': itemName,
