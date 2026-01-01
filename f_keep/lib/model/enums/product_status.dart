@@ -1,0 +1,1 @@
+enum ProductStatus { inFridge, eaten, wasted}
