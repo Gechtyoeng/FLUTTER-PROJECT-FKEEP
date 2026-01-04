@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/mock/mocks_data.dart';
+import '../widgets/navigation_bar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,9 +19,7 @@ class HomeScreen extends StatelessWidget {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("FKEEP"), 
-      centerTitle: true, 
-      backgroundColor: Theme.of(context).colorScheme.primary),
+      appBar: AppBar(title: const Text("FKEEP"), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.primary),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -64,14 +63,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.kitchen), label: "My Fridge"),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: "Products"),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Shopping"),
-        ],
-      ),
+      bottomNavigationBar: Navigationbar(currentIndex: 0),
     );
   }
 
