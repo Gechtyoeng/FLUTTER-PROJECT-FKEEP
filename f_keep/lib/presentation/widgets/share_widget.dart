@@ -20,7 +20,7 @@ class InputField extends StatelessWidget {
       controller: controller,
       validator: validator,
 
-      //only avaliable for dae picker input filed
+      //only avaliable for date picker input filed
       readOnly: isDate,
 
       onTap: isDate
@@ -64,6 +64,7 @@ class InputField extends StatelessWidget {
   }
 }
 
+// widget for dropdown button
 class AppDropdown<T> extends StatelessWidget {
   final T? value;
   final List<T> items;
@@ -116,6 +117,7 @@ class AppDropdown<T> extends StatelessWidget {
   }
 }
 
+//widget for app button
 class AppButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
@@ -139,6 +141,34 @@ class AppButton extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}
+
+//widget for app filter button
+
+class FilterButton extends StatelessWidget {
+  final String buttonText;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const FilterButton({super.key, required this.buttonText, required this.isSelected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? Theme.of(context).colorScheme.primaryContainer : Theme.of(context).colorScheme.surfaceContainer,
+          foregroundColor: isSelected ? Theme.of(context).colorScheme.onPrimaryContainer : Theme.of(context).colorScheme.onSurfaceVariant,
+          minimumSize: const Size.fromHeight(40),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadiusGeometry.circular(8),
+            side: BorderSide(color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline, width: 1),
+          ),
+        ),
+        child: Text(buttonText),
       ),
     );
   }
