@@ -31,43 +31,30 @@ final mockShoppingItems = [
     itemName: "Milk",
     qty: 2,
     unit: Units.pack,
-    status: ShoppingStatus.pending,
+    // status: ShoppingStatus.pending,
     category: Category.other,
   ),
   ShoppingItem(
     itemName: "Eggs",
     qty: 12,
     unit: Units.pcs,
-    status: ShoppingStatus.purchased,
+    //status: ShoppingStatus.purchased,
     category: Category.other,
   ),
   ShoppingItem(
     itemName: "Spinach",
     qty: 1,
     unit: Units.bags,
-    status: ShoppingStatus.pending,
+    // status: ShoppingStatus.pending,
     category: Category.vegetable,
   ),
 ];
 
 /// Mock shopping list
-final mockShoppingList = ShoppingList(
-  title: "Weekly Groceries",
-  items: mockShoppingItems,
-);
+final mockShoppingList = ShoppingList(title: "Weekly Groceries", items: mockShoppingItems);
 
 /// Mock product history
 final mockHistory = [
-  ProductHistory(
-    productId: mockProducts[0].productId,
-    dateChange: DateTime.now().subtract(const Duration(days: 1)),
-    totalEaten: 10,
-    totalWasted: 0,
-  ),
-  ProductHistory(
-    productId: mockProducts[1].productId,
-    dateChange: DateTime.now(),
-    totalEaten: 0,
-    totalWasted: 1,
-  ),
+  ProductHistory(productId: mockProducts[0].productId, dateChange: DateTime.now().subtract(const Duration(days: 1)), totalEaten: 10, totalWasted: 0),
+  ProductHistory(productId: mockProducts[1].productId, dateChange: DateTime.now(), totalEaten: 0, totalWasted: 1),
 ];

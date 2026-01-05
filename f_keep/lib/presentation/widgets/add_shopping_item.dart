@@ -1,9 +1,11 @@
+import 'package:f_keep/models/product_model.dart';
+import 'package:f_keep/models/shopping_item_model.dart';
 import 'package:flutter/material.dart';
-
+import '../widgets/share_widget.dart';
 class AddShoppingItemModal extends StatefulWidget {
-  final void Function(String name, DateTime? expiry, int qty, String category, String unit) onAdd;
+  final ShoppingItem? newItem;
 
-  const AddShoppingItemModal({super.key, required this.onAdd});
+  const AddShoppingItemModal({super.key, this.newItem});
 
   @override
   State<AddShoppingItemModal> createState() => _AddShoppingItemModalState();
@@ -15,8 +17,8 @@ class _AddShoppingItemModalState extends State<AddShoppingItemModal> {
   final _qtyController = TextEditingController();
 
   DateTime? _expiryDate;
-  String _selectedCategory = "Fruit";
-  String _selectedUnit = "Pack";
+  Category  _selectedCategory = Category.fruit;
+  Units _selectedUnit = Units.pack;
 
   @override
   Widget build(BuildContext context) {
@@ -44,44 +46,43 @@ class _AddShoppingItemModalState extends State<AddShoppingItemModal> {
               Row(
                 children: [
                   Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedCategory,
-                      items: ["Fruit", "Meat", "Vegetable", "Can"].map((c) {
-                        return DropdownMenuItem(value: c, child: Text(c));
-                      }).toList(),
-                      onChanged: (val) => setState(() => _selectedCategory = val!),
-                      decoration: const InputDecoration(labelText: "Category"),
-                    ),
+                    child: AppDropdown<Category>(
+                    value: _selectedCategory,
+                    items: Category.values,
+                    hintText: "Select category",
+                    labelBuilder: (c) => c.name,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedCategory = value!;
+                      });
+                    },
+                    validator: (value) => value == null ? 'Please select a category' : null,
+                  ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _selectedUnit,
-                      items: ["Pack", "Bag", "Can"].map((u) {
-                        return DropdownMenuItem(value: u, child: Text(u));
-                      }).toList(),
-                      onChanged: (val) => setState(() => _selectedUnit = val!),
-                      decoration: const InputDecoration(labelText: "Unit"),
-                    ),
+                    child: AppDropdown<Units>(
+                          value: _selectedUnit,
+                          items: Units.values,
+                          hintText: "Unit",
+                          labelBuilder: (u) => u.name,
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedUnit = value!;
+                            });
+                          },
+                          validator: (value) => value == null ? 'Please select a unit' : null,
+                        ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(
-                    child: Text(_expiryDate == null
-                        ? "No Expiry Date"
-                        : "Expiry: ${_expiryDate!.toLocal().toString().split(' ')[0]}"),
-                  ),
+                  Expanded(child: Text(_expiryDate == null ? "No Expiry Date" : "Expiry: ${_expiryDate!.toLocal().toString().split(' ')[0]}")),
                   TextButton(
                     onPressed: () async {
-                      final picked = await showDatePicker(
-                        context: context,
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime(2100),
-                      );
+                      final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2100));
                       if (picked != null) {
                         setState(() => _expiryDate = picked);
                       }
@@ -95,21 +96,17 @@ class _AddShoppingItemModalState extends State<AddShoppingItemModal> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              widget.onAdd(
-                _nameController.text,
-                _expiryDate,
-                int.tryParse(_qtyController.text) ?? 0,
-                _selectedCategory,
-                _selectedUnit,
+              final shoppingItem = ShoppingItem(
+                itemName: _nameController.text,
+                qty: int.tryParse(_qtyController.text) ?? 0,
+                unit: _selectedUnit,
+                category: _selectedCategory,
               );
-              Navigator.pop(context);
+              Navigator.pop(context, shoppingItem);
             }
           },
           child: const Text("Add"),

@@ -2,15 +2,14 @@ import 'package:uuid/uuid.dart';
 import 'product_model.dart';
 
 //Enum for shopping status
-enum ShoppingStatus { pending, progess, purchased }
-
+enum ShoppingStatus { progess, pending, purchased }
 
 class ShoppingItem {
   final String shoppingItemId;
   final String itemName;
   final int qty;
   final Units unit;
-  final ShoppingStatus status;
+  //final ShoppingStatus status;
   final Category category;
 
   ShoppingItem({
@@ -18,11 +17,11 @@ class ShoppingItem {
     required this.itemName,
     required this.qty,
     required this.unit,
-    required this.status,
+   // required this.status,
     required this.category,
   }) : shoppingItemId = shoppingItemId ?? const Uuid().v4();
 
-  bool get isBought => status == ShoppingStatus.purchased;
+ // bool get isBought => status == ShoppingStatus.purchased;
 
   // add ShoppingItem to Product when purchased
   Product toProduct() {
@@ -41,7 +40,7 @@ class ShoppingItem {
     itemName: json['itemName'],
     qty: json['qty'],
     unit: Units.values.firstWhere((e) => e.name == json['unit']),
-    status: ShoppingStatus.values.firstWhere((e) => e.name == json['status']),
+    //status: ShoppingStatus.values.firstWhere((e) => e.name == json['status']),
     category: Category.values.firstWhere((e) => e.name == json['category']),
   );
   
@@ -50,7 +49,7 @@ class ShoppingItem {
     'itemName': itemName,
     'qty': qty,
     'unit': unit.name,
-    'status': status.name,
+    //'status': status.name,
     'category': category.name,
   };
 }

@@ -10,14 +10,14 @@ class ShoppingList {
   ShoppingList({String? shoppingListId, this.title, required this.items})
     : shoppingListId = shoppingListId ?? const Uuid().v4();
 
-  bool get allPurchased => items.every((item) => item.isBought);
+ // bool get allPurchased => items.every((item) => item.isBought);
 
-  List<Product> toProducts() {
-    return items
-        .where((item) => item.isBought)
-        .map((item) => item.toProduct())
-        .toList();
-  }
+  // List<Product> toProducts() {
+  //   return items
+  //       .where((item) => item.isBought)
+  //       .map((item) => item.toProduct())
+  //       .toList();
+  // }
 
   // JSON serialization
   factory ShoppingList.fromJson(Map<String, dynamic> json) => ShoppingList(

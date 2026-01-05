@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/product_model.dart';
 import 'package:uuid/uuid.dart';
 import '../../utils/validators.dart';
@@ -105,7 +106,7 @@ class _ProductFormState extends State<ProductForm> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.onPrimary),
           onPressed: () {
-            Navigator.pop(context);
+            context.pop();
           },
         ),
       ),
