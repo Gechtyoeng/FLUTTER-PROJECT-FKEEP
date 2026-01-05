@@ -1,6 +1,7 @@
 import 'package:f_keep/presentation/widgets/product_card.dart';
 import 'package:flutter/material.dart';
 import '../../data/mock/mocks_data.dart';
+import '../widgets/navigation_bar.dart';
 import '../widgets/summary_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -21,11 +22,7 @@ class HomeScreen extends StatelessWidget {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("FKEEP"),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      ),
+      appBar: AppBar(title: const Text("FKEEP"), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.primary),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
