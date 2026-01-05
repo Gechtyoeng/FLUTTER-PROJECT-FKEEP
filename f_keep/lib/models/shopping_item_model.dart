@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'product_model.dart';
 
-//Enum fir shooping status
+//Enum for shopping status
 enum ShoppingStatus { pending, progess, purchased }
 
 
