@@ -1,6 +1,8 @@
+import 'package:f_keep/presentation/widgets/product_card.dart';
 import 'package:flutter/material.dart';
 import '../../data/mock/mocks_data.dart';
 import '../widgets/navigation_bar.dart';
+import '../widgets/summary_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -9,9 +11,10 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final totalProducts = mockProducts.length;
     final totalEaten = mockHistory.fold<int>(0, (sum, h) => sum + h.totalEaten);
-    final totalWasted = mockHistory.fold<int>(0, (sum, h) => sum + h.totalWasted);
-
-    // Filter nearly expired products (expireDate within 3 days)
+    final totalWasted = mockHistory.fold<int>(
+      0,
+      (sum, h) => sum + h.totalWasted,
+    );
     final nearlyExpire = mockProducts.where((p) {
       if (p.expireDate == null) return false;
       final daysLeft = p.expireDate!.difference(DateTime.now()).inDays;
@@ -21,32 +24,62 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("FKEEP"), centerTitle: true, backgroundColor: Theme.of(context).colorScheme.primary),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Summary section
-            const Text("All summaries", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              "All summaries",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 12),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _summaryCard("Total Products", totalProducts.toString(), Colors.blue),
-                _summaryCard("Total Eaten", totalEaten.toString(), Colors.green),
-                _summaryCard("Total Wasted", totalWasted.toString(), Colors.red),
+                Expanded(
+                  child: SummaryCard(
+                    title: "Total Products",
+                    value: totalProducts.toString(),
+                    color: Colors.blue,
+                    icon: Icons.shopping_basket,
+                  ),
+                ),
+                SizedBox(width: 42),
+                Expanded(
+                  child: SummaryCard(
+                    title: "Total Eaten",
+                    value: totalEaten.toString(),
+                    color: Colors.green,
+                    icon: Icons.restaurant,
+                  ),
+                ),
+                SizedBox(width: 42),
+                Expanded(
+                  child: SummaryCard(
+                    title: "Total Wasted",
+                    value: totalWasted.toString(),
+                    color: Colors.red,
+                    icon: Icons.delete,
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 42),
 
             // Nearly Expire section
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: const [
-                Text("Nearly Expire", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  "Nearly Expire",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 Text("See All", style: TextStyle(color: Colors.blue)),
               ],
             ),
             const SizedBox(height: 12),
+
             SizedBox(
               height: 180,
               child: ListView.separated(
@@ -55,52 +88,34 @@ class HomeScreen extends StatelessWidget {
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final product = nearlyExpire[index];
-                  final daysLeft = product.expireDate != null ? product.expireDate!.difference(DateTime.now()).inDays : 0;
-                  return _productCard(product.productName, "$daysLeft days more", "${product.qty}${product.unit.name}");
+                  final daysLeft = product.expireDate != null
+                      ? product.expireDate!.difference(DateTime.now()).inDays
+                      : 0;
+                  return ProductCard(
+                    name: product.productName,
+                    subtitle: "$daysLeft days more",
+                    qty: "${product.qty}${product.unit.name}",
+                    icon: Icons.fastfood, 
+                    color: Colors.orange,
+                  );
                 },
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: Navigationbar(currentIndex: 0),
-    );
-  }
-
-  Widget _summaryCard(String title, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.kitchen),
+            label: "My Fridge",
           ),
-          const SizedBox(height: 4),
-          Text(title, style: const TextStyle(fontSize: 14)),
-        ],
-      ),
-    );
-  }
-
-  Widget _productCard(String name, String subtitle, String qty) {
-    return Container(
-      width: 120,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.orange.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.fastfood, size: 40, color: Colors.orange),
-          const SizedBox(height: 8),
-          Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          Text(qty, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: "Products"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_cart),
+            label: "Shopping",
+          ),
         ],
       ),
     );
