@@ -27,7 +27,7 @@ class Navigationbar extends StatelessWidget {
       },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.kitchen), label: "My Fridge"),
-        BottomNavigationBarItem(icon: Icon(Icons.list), label: "Products"),
+        BottomNavigationBarItem(icon: Icon(Icons.shopping_basket), label: "Products"),
         BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: "Shopping"),
       ],
     );

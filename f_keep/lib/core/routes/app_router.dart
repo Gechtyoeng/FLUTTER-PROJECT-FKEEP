@@ -21,27 +21,15 @@ class AppRoutes {
 final GoRouter fKeepRouter = GoRouter(
   initialLocation: '/home',
   routes: [
-    GoRoute(
-      path: '/home',
-      name: AppRoutes.home,
-      builder: (context, state) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: '/products',
-      name: AppRoutes.products,
-      builder: (context, state) => const ProductScreen(),
-    ),
-    GoRoute(
-      path: '/shopping',
-      name: AppRoutes.shopping,
-      builder: (context, state) => const ShoppingScreen(),
-    ),
+    GoRoute(path: '/home', name: AppRoutes.home, builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/products', name: AppRoutes.products, builder: (context, state) => const ProductScreen()),
+    GoRoute(path: '/shopping', name: AppRoutes.shopping, builder: (context, state) => const ShoppingScreen()),
     // screen that do not need the bottom navigation bar
     GoRoute(
       path: '/product-form',
       name: AppRoutes.productForm,
       builder: (context, state) {
-        final product = state.extra is Product ? state.extra as Product : null;
+        final product = state.extra as Product?;
         return ProductForm(product: product);
       },
     ),
