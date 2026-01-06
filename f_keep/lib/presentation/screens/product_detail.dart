@@ -7,6 +7,37 @@ class ProductDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('this is product detail'));
+    final scheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(product.productName),
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Quantity: ${product.qty} ${product.unit.name}",
+                style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 12),
+            Text(
+              product.expireDate != null
+                  ? "Expires: ${product.expireDate}"
+                  : "No expiry date",
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Text("Category: ${product.category.name}",
+                style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 12),
+            Text("Status: ${product.status.name}",
+                style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
+    );
   }
 }

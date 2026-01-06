@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../models/product_model.dart';
 import 'package:uuid/uuid.dart';
+import '../../models/product_model.dart';
 import '../../utils/validators.dart';
 import '../widgets/share_widget.dart';
 
-final newProductId = Uuid().v4();
-
 class ProductForm extends StatefulWidget {
-  final Product? product; //no product for create new
+  final Product? product;
   const ProductForm({super.key, this.product});
 
   bool get isEdit => product != null;
@@ -18,100 +16,118 @@ class ProductForm extends StatefulWidget {
 }
 
 class _ProductFormState extends State<ProductForm> {
-  //controllers
   late TextEditingController _nameController;
   late TextEditingController _qtyController;
   late TextEditingController _dateController;
   late Category category;
   late Units unit;
 
-  //form key
   final _formKey = GlobalKey<FormState>();
 
-  //default setting for product
   static const defaultName = 'Food';
   static const defaultQty = 1;
-  static const defaultCategory = Category.other;
+  static const defaultCategory = Category.fruit;
   static const defaultUnit = Units.bags;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.isEdit ? widget.product!.productName : defaultName);
+    _nameController = TextEditingController(
+      text: widget.isEdit ? widget.product!.productName : defaultName,
+    );
 
-    _qtyController = TextEditingController(text: widget.isEdit ? widget.product!.qty.toString() : defaultQty.toString());
+    _qtyController = TextEditingController(
+      text: widget.isEdit
+          ? widget.product!.qty.toString()
+          : defaultQty.toString(),
+    );
 
-    _dateController = TextEditingController(text: widget.isEdit ? _formatDate(widget.product!.addedDate) : _formatDate(DateTime.now()));
+    _dateController = TextEditingController(
+      text: widget.isEdit && widget.product!.expireDate != null
+          ? _formatDate(widget.product!.expireDate!)
+          : _formatDate(DateTime.now().add(const Duration(days: 5))),
+    );
 
     category = widget.isEdit ? widget.product!.category : defaultCategory;
-
     unit = widget.isEdit ? widget.product!.unit : defaultUnit;
   }
 
   @override
   void dispose() {
-    super.dispose();
-    // dispose the controlers
     _nameController.dispose();
     _dateController.dispose();
     _qtyController.dispose();
+    super.dispose();
   }
 
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
-  //when reset the form
   void onReset() {
     setState(() {
-      _nameController.text = widget.isEdit ? widget.product!.productName : defaultName;
-
-      _qtyController.text = widget.isEdit ? widget.product!.qty.toString() : defaultQty.toString();
-
-      _dateController.text = widget.isEdit ? _formatDate(widget.product!.addedDate) : _formatDate(DateTime.now());
-
-      // Reset dropdowns
+      _nameController.text = widget.isEdit
+          ? widget.product!.productName
+          : defaultName;
+      _qtyController.text = widget.isEdit
+          ? widget.product!.qty.toString()
+          : defaultQty.toString();
+      _dateController.text = widget.isEdit && widget.product!.expireDate != null
+          ? _formatDate(widget.product!.expireDate!)
+          : _formatDate(DateTime.now().add(const Duration(days: 7)));
       category = widget.isEdit ? widget.product!.category : defaultCategory;
       unit = widget.isEdit ? widget.product!.unit : defaultUnit;
     });
   }
 
-  //create new product
   void onSubmit() {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
+    DateTime? expire;
+    try {
+      expire = DateTime.parse(_dateController.text);
+    } catch (_) {
+      expire = null;
+    }
+
     final product = Product(
+      productId: widget.isEdit ? widget.product!.productId : const Uuid().v4(),
       productName: _nameController.text,
-      addedDate: DateTime.now(),
-      qty: int.parse(_qtyController.text),
+      addedDate: widget.isEdit ? widget.product!.addedDate : DateTime.now(),
+      expireDate: expire,
+      qty: int.tryParse(_qtyController.text) ?? 0,
       unit: unit,
       category: category,
-      status: ProductStatus.inFridge,
+      status: widget.isEdit ? widget.product!.status : ProductStatus.inFridge,
     );
 
-    Navigator.pop(context, product);
+    context.pop(product);
   }
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           widget.isEdit ? 'Edit Product' : 'Create Product',
-          style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: scheme.onPrimary,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: scheme.primary,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.onPrimary),
-          onPressed: () {
-            context.pop();
-          },
+          icon: Icon(Icons.arrow_back_ios, color: scheme.onPrimary),
+          onPressed: () => context.pop(),
         ),
       ),
       body: Padding(
-        padding: EdgeInsetsGeometry.fromLTRB(25, 12, 25, 12),
+        padding: const EdgeInsets.fromLTRB(25, 12, 25, 12),
         child: Form(
           key: _formKey,
           child: Column(
@@ -119,12 +135,20 @@ class _ProductFormState extends State<ProductForm> {
             children: [
               Column(
                 children: [
-                  InputField(controller: _nameController, hintText: 'Product Name', validator: validateName),
+                  InputField(
+                    controller: _nameController,
+                    hintText: 'Product Name',
+                    validator: validateName,
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
-                        child: InputField(controller: _qtyController, hintText: 'Product Qty', validator: validateQty),
+                        child: InputField(
+                          controller: _qtyController,
+                          hintText: 'Product Qty',
+                          validator: validateQty,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -138,13 +162,19 @@ class _ProductFormState extends State<ProductForm> {
                               unit = value!;
                             });
                           },
-                          validator: (value) => value == null ? 'Please select a unit' : null,
+                          validator: (value) =>
+                              value == null ? 'Please select a unit' : null,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  InputField(controller: _dateController, hintText: 'Select a Date', isDate: true, validator: validateDate),
+                  InputField(
+                    controller: _dateController,
+                    hintText: 'Expire Date (YYYY-MM-DD)',
+                    isDate: true,
+                    validator: validateDate,
+                  ),
                   const SizedBox(height: 12),
                   AppDropdown<Category>(
                     value: category,
@@ -156,18 +186,26 @@ class _ProductFormState extends State<ProductForm> {
                         category = value!;
                       });
                     },
-                    validator: (value) => value == null ? 'Please select a category' : null,
+                    validator: (value) =>
+                        value == null ? 'Please select a category' : null,
                   ),
                 ],
               ),
               Row(
                 children: [
                   Expanded(
-                    child: AppButton(label: "Reset product", onPressed: onReset, backgroundColor: const Color.fromARGB(1, 158, 154, 156)),
+                    child: AppButton(
+                      label: widget.isEdit ? "Reset changes" : "Reset product",
+                      onPressed: onReset,
+                      backgroundColor: const Color.fromARGB(255, 158, 154, 156),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: AppButton(label: "Save Product", onPressed: onSubmit),
+                    child: AppButton(
+                      label: widget.isEdit ? "Save Changes" : "Save Product",
+                      onPressed: onSubmit,
+                    ),
                   ),
                 ],
               ),
