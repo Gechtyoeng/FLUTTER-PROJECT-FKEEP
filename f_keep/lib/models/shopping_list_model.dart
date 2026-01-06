@@ -1,5 +1,4 @@
 import 'package:uuid/uuid.dart';
-import 'product_model.dart';
 import 'shopping_item_model.dart';
 
 class ShoppingList {

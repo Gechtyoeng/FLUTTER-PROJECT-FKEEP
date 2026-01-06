@@ -18,7 +18,9 @@ class ProductRepository {
     final jsonString = prefs.getString(_storageKey);
     if (jsonString == null) return [];
     final jsonList = jsonDecode(jsonString) as List<dynamic>;
-    return jsonList.map((json) => Product.fromJson(json)).toList();
+    return jsonList
+        .map((json) => Product.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   /// Clear products
