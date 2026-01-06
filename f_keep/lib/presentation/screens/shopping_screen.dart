@@ -1,9 +1,9 @@
-import 'package:f_keep/presentation/widgets/add_shopping_item.dart';
 import 'package:flutter/material.dart';
 import '../../models/shopping_list_model.dart';
-import '../../models/shopping_item_model.dart';
 import '../widgets/share_widget.dart';
 import '../../data/mock/mocks_data.dart';
+import '../screens/shopping_list_detail.dart';
+import '../widgets/add_shopping_list.dart';
 
 class ShoppingScreen extends StatefulWidget {
   const ShoppingScreen({super.key});
@@ -13,12 +13,29 @@ class ShoppingScreen extends StatefulWidget {
 }
 
 class _ShoppingScreenState extends State<ShoppingScreen> {
-  ShoppingStatus _currentFilter = ShoppingStatus.progess;
+  ShoppingStatus _currentFilter = ShoppingStatus.progress;
+
+  //function for filter the shopping list
+  List<ShoppingList> get filteredLists {
+    return mockShoppingLists.where((list) => list.status == _currentFilter).toList();
+  }
 
   void onCreate() async {
-    ShoppingList? newShoppingList = await Navigator.of(context).push<ShoppingList>(MaterialPageRoute(builder: (context) => const AddShoppingItemModal()));
+    final newShoppingList = await showModalBottomSheet<ShoppingList>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return FractionallySizedBox(heightFactor: 0.6, child: AddShoppingListBottomsheet());
+      },
+    );
 
-    if (newShoppingList != null) {}
+    if (newShoppingList != null) {
+      setState(() {
+        mockShoppingLists.add(newShoppingList);
+      });
+    }
   }
 
   @override
@@ -44,7 +61,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsetsGeometry.fromLTRB(25, 12, 25, 12),
+        padding: const EdgeInsets.fromLTRB(25, 12, 25, 12),
         child: Column(
           children: [
             InkWell(
@@ -66,24 +83,39 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Shopping List', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    for (final status in ShoppingStatus.values) ...[
-                      FilterButton(buttonText: status.name, isSelected: _currentFilter == status, onTap: () => setState(() => _currentFilter = status)),
-                      const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Shopping List', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      for (final status in ShoppingStatus.values) ...[
+                        FilterButton(buttonText: status.name, isSelected: _currentFilter == status, onTap: () => setState(() => _currentFilter = status)),
+                        const SizedBox(width: 12),
+                      ],
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredLists.length,
+                      itemBuilder: (context, index) {
+                        final list = filteredLists[index];
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 8),
+                          child: ShoppingListTile(
+                            shoppingList: list,
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingListDetail(shoppingList: list))),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
-            ShoppingListTile(shoppingList: mockShoppingList),
-            ShoppingListTile(shoppingList: mockShoppingList),
           ],
         ),
       ),
@@ -93,12 +125,13 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
 
 class ShoppingListTile extends StatelessWidget {
   final ShoppingList shoppingList;
-  const ShoppingListTile({super.key, required this.shoppingList});
+  final VoidCallback onTap;
+  const ShoppingListTile({super.key, required this.shoppingList, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
         decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(8)),
@@ -106,9 +139,9 @@ class ShoppingListTile extends StatelessWidget {
           contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
           title: Text(shoppingList.title ?? 'shoppingList', style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onPrimary)),
           trailing: Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary, borderRadius: BorderRadius.circular(4)),
-            child: const Text('Pending', style: TextStyle(color: Colors.white, fontSize: 12)),
+            child: Text(shoppingList.status.name, style: const TextStyle(color: Colors.white, fontSize: 12)),
           ),
         ),
       ),
