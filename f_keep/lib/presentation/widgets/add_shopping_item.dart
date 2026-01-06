@@ -34,9 +34,20 @@ class _AddShoppingItemBottomSheetState extends State<AddShoppingItemBottomSheet>
         qty: int.tryParse(_qtyController.text) ?? 0,
         unit: _selectedUnit,
         category: _selectedCategory,
-        isBought: false,
+        isBought: widget.newItem?.isBought ?? false,
       );
       Navigator.pop(context, shoppingItem);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.newItem != null) {
+      _nameController.text = widget.newItem!.itemName;
+      _qtyController.text = widget.newItem!.qty.toString();
+      _selectedCategory = widget.newItem!.category;
+      _selectedUnit = widget.newItem!.unit;
     }
   }
 
@@ -56,8 +67,8 @@ class _AddShoppingItemBottomSheetState extends State<AddShoppingItemBottomSheet>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-                    const Text("Add Shopping Item", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    TextButton(onPressed: onAdd, child: const Text("Add")),
+                    Text(widget.newItem == null ? "Add Shopping Item" : "Edit Shopping Item", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    TextButton(onPressed: onAdd, child: Text(widget.newItem == null ? "Add" : "Save")),
                   ],
                 ),
                 const SizedBox(height: 16),
