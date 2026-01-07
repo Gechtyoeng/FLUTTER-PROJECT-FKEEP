@@ -12,7 +12,7 @@ String? validateQty(String? value) {
     return "Quantity must be a number";
   }
 
-  if (qty < 1 || qty > 20) {
+  if (qty < 0 || qty > 20) {
     return "Quantity shall be a number between 1 and 20";
   }
 

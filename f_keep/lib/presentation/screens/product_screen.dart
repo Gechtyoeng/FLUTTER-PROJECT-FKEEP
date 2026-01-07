@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../../data/repositories/product_repo.dart';
 import '../screens/product_form.dart';
 import '../../models/product_model.dart';
-import '../../presentation/widgets/share_widget.dart';
 import '../../presentation/widgets/product_card.dart';
+import '../../presentation/widgets/share_widget.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({super.key});
@@ -16,7 +16,9 @@ class _ProductScreenState extends State<ProductScreen> {
   final ProductRepository _repository = ProductRepository();
   List<Product> _products = [];
   bool _isLoading = true;
+
   Category? selectedCategory;
+  ProductStatus? selectedStatus;
 
   static const Map<Category, String> _categoryImages = {
     Category.meat: 'assets/images/Meat.jpg',
@@ -43,23 +45,6 @@ class _ProductScreenState extends State<ProductScreen> {
     await _repository.saveProducts(_products);
   }
 
-  Future<void> onEdit(Product product) async {
-    final Product? updatedProduct = await Navigator.of(context).push<Product>(
-      MaterialPageRoute(builder: (_) => ProductForm(product: product)),
-    );
-    if (updatedProduct != null) {
-      setState(() {
-        final index = _products.indexWhere(
-          (p) => p.productId == product.productId,
-        );
-        if (index != -1) {
-          _products[index] = updatedProduct;
-        }
-      });
-      await _repository.saveProducts(_products);
-    }
-  }
-
   void onCreate() async {
     final Product? newProduct = await Navigator.of(context).push<Product>(
       MaterialPageRoute(builder: (context) => const ProductForm()),
@@ -72,23 +57,18 @@ class _ProductScreenState extends State<ProductScreen> {
     }
   }
 
-  void onDelete(int index) async {
-    setState(() {
-      _products.removeAt(index);
-    });
-    if (_products.isEmpty) {
-      await _repository.clearProducts();
-    } else {
-      await _saveProducts();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final filteredProducts = selectedCategory == null
-        ? _products
-        : _products.where((p) => p.category == selectedCategory).toList();
+    final filteredProducts = _products
+    .where(
+      (p) => (selectedStatus ?? ProductStatus.inFridge) == p.computedStatus,
+    )
+    .where(
+      (p) => selectedCategory == null || p.category == selectedCategory,
+    )
+    .toList();
+
 
     return Scaffold(
       appBar: AppBar(
@@ -124,53 +104,60 @@ class _ProductScreenState extends State<ProductScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Filter Category
-                  const Text(
-                    "All Categories",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
                   Row(
                     children: [
-                      FilterButton(
-                        buttonText: "All",
-                        isSelected: selectedCategory == null,
-                        onTap: () => setState(() => selectedCategory = null),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterButton(
-                        buttonText: "Meat",
-                        isSelected: selectedCategory == Category.meat,
-                        onTap: () =>
-                            setState(() => selectedCategory = Category.meat),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterButton(
-                        buttonText: "Vegetable",
-                        isSelected: selectedCategory == Category.vegetable,
-                        onTap: () => setState(
-                          () => selectedCategory = Category.vegetable,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Filter by Category",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            AppDropdown<Category?>(
+                              value: selectedCategory,
+                              items: [null, ...Category.values],
+                              hintText: "Select Category",
+                              onChanged: (val) =>
+                                  setState(() => selectedCategory = val),
+                              labelBuilder: (c) => c == null ? "All" : c.name,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      FilterButton(
-                        buttonText: "Fruit",
-                        isSelected: selectedCategory == Category.fruit,
-                        onTap: () =>
-                            setState(() => selectedCategory = Category.fruit),
-                      ),
-                      const SizedBox(width: 8),
-                      FilterButton(
-                        buttonText: "Other",
-                        isSelected: selectedCategory == Category.other,
-                        onTap: () =>
-                            setState(() => selectedCategory = Category.other),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Filter by Status",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            AppDropdown<ProductStatus?>(
+                              value: selectedStatus,
+                              items: [null, ...ProductStatus.values],
+                              hintText: "Select Status",
+                              onChanged: (val) =>
+                                  setState(() => selectedStatus = val),
+                              labelBuilder: (s) => s == null ? "All" : s.name,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
 
-                  // Product list
+                  //List of Product
                   const Text(
                     "Products",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -179,7 +166,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   SizedBox(
                     height: 180,
                     child: filteredProducts.isEmpty
-                        ? const Center(child: Text('No products yet'))
+                        ? const Center(child: Text('No products found'))
                         : ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: filteredProducts.length,
@@ -193,23 +180,30 @@ class _ProductScreenState extends State<ProductScreen> {
 
                               return SizedBox(
                                 width: 160,
-                                child: GestureDetector(
-                                  onTap: () => onEdit(
-                                    product,
-                                  ), // <-- call the top function
-                                  child: ProductCard(
-                                    product: product,
-                                    imagePath: imagePath,
-                                    onDeleted: () async {
-                                      setState(() {
-                                        _products.removeWhere(
-                                          (p) =>
-                                              p.productId == product.productId,
-                                        );
-                                      });
-                                      await _repository.saveProducts(_products);
-                                    },
-                                  ),
+                                child: ProductCard(
+                                  product: product,
+                                  imagePath: imagePath,
+                                  onDeleted: () async {
+                                    setState(() {
+                                      _products.removeWhere(
+                                        (p) => p.productId == product.productId,
+                                      );
+                                    });
+                                    await _repository.saveProducts(_products);
+                                  },
+                                  onUpdated: (updatedProduct) async {
+                                    setState(() {
+                                      final idx = _products.indexWhere(
+                                        (p) =>
+                                            p.productId ==
+                                            updatedProduct.productId,
+                                      );
+                                      if (idx != -1) {
+                                        _products[idx] = updatedProduct;
+                                      }
+                                    });
+                                    await _repository.saveProducts(_products);
+                                  },
                                 ),
                               );
                             },

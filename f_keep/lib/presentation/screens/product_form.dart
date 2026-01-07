@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import '../../data/repositories/product_history_repo.dart';
 import '../../models/product_model.dart';
+import '../../models/product_history_model.dart';
 import '../../utils/validators.dart';
 import '../widgets/share_widget.dart';
 
@@ -21,8 +23,10 @@ class _ProductFormState extends State<ProductForm> {
   late TextEditingController _dateController;
   late Category category;
   late Units unit;
+  late ProductStatus status;
 
   final _formKey = GlobalKey<FormState>();
+  final ProductHistoryRepository _historyRepo = ProductHistoryRepository();
 
   static const defaultName = 'Food';
   static const defaultQty = 1;
@@ -50,6 +54,7 @@ class _ProductFormState extends State<ProductForm> {
 
     category = widget.isEdit ? widget.product!.category : defaultCategory;
     unit = widget.isEdit ? widget.product!.unit : defaultUnit;
+    status = widget.isEdit ? widget.product!.status : ProductStatus.inFridge;
   }
 
   @override
@@ -77,10 +82,11 @@ class _ProductFormState extends State<ProductForm> {
           : _formatDate(DateTime.now().add(const Duration(days: 7)));
       category = widget.isEdit ? widget.product!.category : defaultCategory;
       unit = widget.isEdit ? widget.product!.unit : defaultUnit;
+      status = widget.isEdit ? widget.product!.status : ProductStatus.inFridge;
     });
   }
 
-  void onSubmit() {
+  Future<void> onSubmit() async {
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) return;
 
@@ -91,16 +97,38 @@ class _ProductFormState extends State<ProductForm> {
       expire = null;
     }
 
+    int newQty = int.tryParse(_qtyController.text) ?? 0;
+    ProductStatus newStatus = status;
+
+    // Auto change to eaten if qty is 0
+    if (newQty == 0) {
+      newStatus = ProductStatus.eaten;
+    }
+
     final product = Product(
       productId: widget.isEdit ? widget.product!.productId : const Uuid().v4(),
       productName: _nameController.text,
       addedDate: widget.isEdit ? widget.product!.addedDate : DateTime.now(),
       expireDate: expire,
-      qty: int.tryParse(_qtyController.text) ?? 0,
+      qty: newQty,
       unit: unit,
       category: category,
-      status: widget.isEdit ? widget.product!.status : ProductStatus.inFridge,
+      status: newStatus,
     );
+
+    if (widget.isEdit) {
+      final prevQty = widget.product!.qty;
+      final eatenChange = (prevQty - newQty).clamp(0, prevQty);
+      final wastedChange = newStatus == ProductStatus.wasted ? newQty : 0;
+
+      final history = ProductHistory(
+        productId: product.productId,
+        dateChange: DateTime.now(),
+        totalEaten: eatenChange,
+        totalWasted: wastedChange,
+      );
+      await _historyRepo.addHistory(history);
+    }
 
     context.pop(product);
   }
