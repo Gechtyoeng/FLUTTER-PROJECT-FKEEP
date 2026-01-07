@@ -5,6 +5,7 @@ import '../../data/repositories/product_history_repo.dart';
 import '../../data/repositories/product_repo.dart';
 import '../../data/repositories/shopping_repo.dart';
 import '../../models/shopping_list_model.dart';
+import '../../utils/helpers.dart';
 import '../widgets/share_widget.dart';
 import '../screens/shopping_list_detail.dart';
 import '../widgets/add_shopping_list.dart';
@@ -43,7 +44,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
 
   Future<void> _loadLists() async {
     final lists = await shoppingService.loadLists();
-    print("Loaded lists: ${lists.length}");
+    // print("Loaded lists: ${lists.length}");
     setState(() => shoppingLists = lists);
   }
 
@@ -59,7 +60,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
   Future<void> _generateSmartShoppingList() async {
     final shoppingList = await shoppingService.generateSmartShoppingList();
     // save the new shopping list
-    print("Generated shopping list: ${shoppingList.toJson()}");
+    // print("Generated shopping list: ${shoppingList.toJson()}");
     _addList(shoppingList);
   }
 
@@ -131,7 +132,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                   Row(
                     children: [
                       for (final status in ShoppingStatus.values) ...[
-                        FilterButton(buttonText: status.name, isSelected: _currentFilter == status, onTap: () => setState(() => _currentFilter = status)),
+                        FilterButton(buttonText: capitalize(status.name), isSelected: _currentFilter == status, onTap: () => setState(() => _currentFilter = status)),
                         const SizedBox(width: 12),
                       ],
                     ],
@@ -178,11 +179,11 @@ class ShoppingListTile extends StatelessWidget {
         decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(8)),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-          title: Text(shoppingList.title ?? 'shoppingList', style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onPrimary)),
+          title: Text(shoppingList.title ?? 'ShoppingList', style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onPrimary)),
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary, borderRadius: BorderRadius.circular(4)),
-            child: Text(shoppingList.status.name, style: const TextStyle(color: Colors.white, fontSize: 12)),
+            child: Text(capitalize(shoppingList.status.name), style: const TextStyle(color: Colors.white, fontSize: 12)),
           ),
         ),
       ),
