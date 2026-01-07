@@ -28,4 +28,11 @@ class ProductRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_storageKey);
   }
+
+  /// add product
+  Future<void> addProduct(Product product) async {
+    final products = await loadProducts();
+    products.add(product);
+    await saveProducts(products);
+  }
 }

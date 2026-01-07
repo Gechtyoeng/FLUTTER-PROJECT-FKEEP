@@ -13,6 +13,13 @@ class AddShoppingListBottomsheet extends StatefulWidget {
 
 class _AddShoppingListBottomsheetState extends State<AddShoppingListBottomsheet> {
   final _nameController = TextEditingController();
+  static const defaultListName = 'shopping List';
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.text = defaultListName;
+  }
 
   @override
   void dispose() {

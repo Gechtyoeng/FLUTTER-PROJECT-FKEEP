@@ -34,7 +34,7 @@ class ShoppingItem {
     'itemName': itemName,
     'qty': qty,
     'unit': unit.name,
-    //'status': status.name,
+    'isBought': isBought,
     'category': category.name,
   };
 }

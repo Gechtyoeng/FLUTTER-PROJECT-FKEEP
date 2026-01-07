@@ -12,7 +12,6 @@ class ShoppingList {
 
   ShoppingList({String? shoppingListId, this.title, required this.items}) : shoppingListId = shoppingListId ?? const Uuid().v4();
 
- // bool get allPurchased => items.every((item) => item.isBought);
  // get the shopping status based on items
  ShoppingStatus get status { 
   if (items.isEmpty) return ShoppingStatus.pending; 

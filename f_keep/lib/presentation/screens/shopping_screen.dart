@@ -1,9 +1,15 @@
+import 'package:f_keep/data/services/shopping_prediction_service.dart';
+import 'package:f_keep/data/services/shopping_service.dart';
 import 'package:flutter/material.dart';
+import '../../data/repositories/product_history_repo.dart';
+import '../../data/repositories/product_repo.dart';
+import '../../data/repositories/shopping_repo.dart';
 import '../../models/shopping_list_model.dart';
 import '../widgets/share_widget.dart';
-import '../../data/mock/mocks_data.dart';
 import '../screens/shopping_list_detail.dart';
 import '../widgets/add_shopping_list.dart';
+import '../../data/services/shopping_generation_service.dart';
+import '../widgets/empty_state.dart';
 
 class ShoppingScreen extends StatefulWidget {
   const ShoppingScreen({super.key});
@@ -13,11 +19,48 @@ class ShoppingScreen extends StatefulWidget {
 }
 
 class _ShoppingScreenState extends State<ShoppingScreen> {
+  late final ShoppingService shoppingService;
+  List<ShoppingList> shoppingLists = [];
+
   ShoppingStatus _currentFilter = ShoppingStatus.progress;
 
   //function for filter the shopping list
   List<ShoppingList> get filteredLists {
-    return mockShoppingLists.where((list) => list.status == _currentFilter).toList();
+    return shoppingLists.where((list) => list.status == _currentFilter).toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    shoppingService = ShoppingService(
+      productRepo: ProductRepository(),
+      historyRepo: ProductHistoryRepository(),
+      shoppingRepo: ShoppingRepository(),
+      generationService: ShoppingGenerationService(predictionService: ShoppingPredictionService()),
+    );
+    _loadLists();
+  }
+
+  Future<void> _loadLists() async {
+    final lists = await shoppingService.loadLists();
+    print("Loaded lists: ${lists.length}");
+    setState(() => shoppingLists = lists);
+  }
+
+  Future<void> _addList(ShoppingList newList) async {
+    await shoppingService.addList(newList);
+    setState(() {
+      shoppingLists.add(newList);
+      _currentFilter = ShoppingStatus.pending;
+    });
+  }
+
+  //generate the shopping list
+  Future<void> _generateSmartShoppingList() async {
+    final shoppingList = await shoppingService.generateSmartShoppingList();
+    // save the new shopping list
+    print("Generated shopping list: ${shoppingList.toJson()}");
+    _addList(shoppingList);
   }
 
   void onCreate() async {
@@ -32,9 +75,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
     );
 
     if (newShoppingList != null) {
-      setState(() {
-        mockShoppingLists.add(newShoppingList);
-      });
+      _addList(newShoppingList);
     }
   }
 
@@ -65,9 +106,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
         child: Column(
           children: [
             InkWell(
-              onTap: () {
-                // implement generate list later
-              },
+              onTap: _generateSmartShoppingList,
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 height: 50,
@@ -99,19 +138,21 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                   ),
                   const SizedBox(height: 24),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: filteredLists.length,
-                      itemBuilder: (context, index) {
-                        final list = filteredLists[index];
-                        return Container(
-                          margin: EdgeInsets.only(bottom: 8),
-                          child: ShoppingListTile(
-                            shoppingList: list,
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingListDetail(shoppingList: list))),
+                    child: filteredLists.isEmpty
+                        ? EmptyState(title: 'No shopping list', icon: Icons.shopping_bag)
+                        : ListView.builder(
+                            itemCount: filteredLists.length,
+                            itemBuilder: (context, index) {
+                              final list = filteredLists[index];
+                              return Container(
+                                margin: EdgeInsets.only(bottom: 8),
+                                child: ShoppingListTile(
+                                  shoppingList: list,
+                                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ShoppingListDetail(shoppingList: list))),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ],
               ),

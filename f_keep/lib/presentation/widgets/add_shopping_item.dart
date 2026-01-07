@@ -9,6 +9,8 @@ class AddShoppingItemBottomSheet extends StatefulWidget {
 
   const AddShoppingItemBottomSheet({super.key, this.newItem});
 
+  bool get isEdit => newItem != null;
+
   @override
   State<AddShoppingItemBottomSheet> createState() => _AddShoppingItemBottomSheetState();
 }
@@ -17,8 +19,12 @@ class _AddShoppingItemBottomSheetState extends State<AddShoppingItemBottomSheet>
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _qtyController = TextEditingController();
-  Category _selectedCategory = Category.fruit;
-  Units _selectedUnit = Units.pack;
+  Category _selectedCategory = Category.other;
+  Units _selectedUnit = Units.pcs;
+
+  //default value for shopping items
+  static const defaultName = 'food';
+  static const defaultQty = 1;
 
   @override
   void dispose() {
@@ -43,12 +49,10 @@ class _AddShoppingItemBottomSheetState extends State<AddShoppingItemBottomSheet>
   @override
   void initState() {
     super.initState();
-    if (widget.newItem != null) {
-      _nameController.text = widget.newItem!.itemName;
-      _qtyController.text = widget.newItem!.qty.toString();
-      _selectedCategory = widget.newItem!.category;
-      _selectedUnit = widget.newItem!.unit;
-    }
+    _nameController.text = widget.isEdit ? widget.newItem!.itemName : defaultName;
+    _qtyController.text = widget.isEdit ? widget.newItem!.qty.toString() : defaultQty.toString();
+    _selectedCategory = widget.isEdit ? widget.newItem!.category : _selectedCategory;
+    _selectedUnit = widget.isEdit ? widget.newItem!.unit : _selectedUnit;
   }
 
   @override
