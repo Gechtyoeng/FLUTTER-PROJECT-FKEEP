@@ -22,6 +22,18 @@ class ShoppingRepository {
     return decoded.map((e) => ShoppingList.fromJson(e)).toList();
   }
 
+  /// Update existing shopping list by ID
+  Future<void> updateList(ShoppingList list) async {
+    final lists = await loadLists();
+    final index = lists.indexWhere((l) => l.shoppingListId == list.shoppingListId);
+    if (index != -1) {
+      lists[index] = list;
+    } else {
+      lists.add(list);
+    }
+    await saveAll(lists);
+  }
+
   /// Save all shopping lists
   Future<void> saveAll(List<ShoppingList> lists) async {
     final prefs = await SharedPreferences.getInstance();

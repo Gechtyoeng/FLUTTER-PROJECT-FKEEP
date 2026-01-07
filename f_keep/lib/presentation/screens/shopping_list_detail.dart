@@ -1,8 +1,15 @@
+import 'package:f_keep/data/repositories/product_history_repo.dart';
+import 'package:f_keep/data/repositories/product_repo.dart';
+import 'package:f_keep/data/repositories/shopping_repo.dart';
+import 'package:f_keep/data/services/shopping_generation_service.dart';
+import 'package:f_keep/data/services/shopping_prediction_service.dart';
 import 'package:flutter/material.dart';
 import '../../models/shopping_list_model.dart';
 import '../widgets/shopping_tile.dart';
 import '../widgets/add_shopping_item.dart';
 import '../../models/shopping_item_model.dart';
+import '../../data/services/shopping_service.dart';
+import '../widgets/share_widget.dart';
 
 class ShoppingListDetail extends StatefulWidget {
   final ShoppingList shoppingList;
@@ -13,6 +20,19 @@ class ShoppingListDetail extends StatefulWidget {
 }
 
 class _ShoppingListDetailState extends State<ShoppingListDetail> {
+  late final ShoppingService shoppingService;
+
+  @override
+  void initState() {
+    super.initState();
+    shoppingService = ShoppingService(
+      productRepo: ProductRepository(),
+      historyRepo: ProductHistoryRepository(),
+      shoppingRepo: ShoppingRepository(),
+      generationService: ShoppingGenerationService(predictionService: ShoppingPredictionService()),
+    );
+  }
+
   void onCreate() async {
     final result = await showModalBottomSheet<ShoppingItem>(
       context: context,
@@ -27,6 +47,7 @@ class _ShoppingListDetailState extends State<ShoppingListDetail> {
       setState(() {
         widget.shoppingList.items.add(result);
       });
+      await shoppingService.updateList(widget.shoppingList);
     }
   }
 
@@ -46,6 +67,7 @@ class _ShoppingListDetailState extends State<ShoppingListDetail> {
       setState(() {
         widget.shoppingList.items[index] = result;
       });
+      await shoppingService.updateList(widget.shoppingList);
     }
   }
 
@@ -83,16 +105,42 @@ class _ShoppingListDetailState extends State<ShoppingListDetail> {
           final item = widget.shoppingList.items[index];
           return ShoppingItemTile(
             shoppingItem: item,
-            onDelete: () {
+            onDelete: () async {
               setState(() {
                 widget.shoppingList.items.removeAt(index);
               });
+              await shoppingService.addList(widget.shoppingList);
             },
             onEdit: () => onEdit(index),
-            onChanged: (value) {
+            onChanged: (value) async {
+              if (value == null) return;
               setState(() {
-                item.isBought = !item.isBought;
+                item.isBought = value;
               });
+
+              if (value) {
+                // Show confirmation dialog final
+                final shouldConvert = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => ConfirmDialog(
+                    title: "Add to Product List?",
+                    message: "Do you want to add '${item.itemName}' to your product list?",
+                    cancelText: "No",
+                    confirmText: "Yes",
+                    confirmColor: Theme.of(context).colorScheme.primary,
+                  ),
+                );
+                if (shouldConvert == true) {
+                  await shoppingService.convertItemToProduct(item);
+                  setState(() {
+                    widget.shoppingList.items.removeAt(index);
+                  });
+                } else {
+                  await shoppingService.updateList(widget.shoppingList);
+                }
+              } else {
+                await shoppingService.updateList(widget.shoppingList);
+              }
             },
           );
         },

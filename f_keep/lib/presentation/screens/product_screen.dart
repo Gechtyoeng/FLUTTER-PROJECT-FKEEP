@@ -4,6 +4,7 @@ import '../screens/product_form.dart';
 import '../../models/product_model.dart';
 import '../../presentation/widgets/product_card.dart';
 import '../../presentation/widgets/share_widget.dart';
+import '../../data/services/product_service.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({super.key});
@@ -13,7 +14,8 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
-  final ProductRepository _repository = ProductRepository();
+  late final ProductService productService;
+  final ProductRepository _productRepo = ProductRepository();
   List<Product> _products = [];
   bool _isLoading = true;
 
@@ -30,30 +32,23 @@ class _ProductScreenState extends State<ProductScreen> {
   @override
   void initState() {
     super.initState();
+    productService = ProductService(repository: ProductRepository());
     _loadProducts();
   }
 
   Future<void> _loadProducts() async {
-    final loaded = await _repository.loadProducts();
+    final loaded = await productService.loadProducts();
     setState(() {
       _products = loaded;
       _isLoading = false;
     });
   }
 
-  Future<void> _saveProducts() async {
-    await _repository.saveProducts(_products);
-  }
-
   void onCreate() async {
-    final Product? newProduct = await Navigator.of(context).push<Product>(
-      MaterialPageRoute(builder: (context) => const ProductForm()),
-    );
+    final Product? newProduct = await Navigator.of(context).push<Product>(MaterialPageRoute(builder: (context) => const ProductForm()));
     if (newProduct != null) {
-      setState(() {
-        _products.add(newProduct);
-      });
-      await _saveProducts();
+      final updated = await productService.addProduct(_products, newProduct);
+      setState(() => _products = updated);
     }
   }
 
@@ -61,24 +56,15 @@ class _ProductScreenState extends State<ProductScreen> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final filteredProducts = _products
-    .where(
-      (p) => (selectedStatus ?? ProductStatus.inFridge) == p.computedStatus,
-    )
-    .where(
-      (p) => selectedCategory == null || p.category == selectedCategory,
-    )
-    .toList();
-
+        .where((p) => (selectedStatus ?? ProductStatus.inFridge) == p.computedStatus)
+        .where((p) => selectedCategory == null || p.category == selectedCategory)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "Products",
-          style: TextStyle(
-            color: scheme.onPrimary,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: scheme.onPrimary, fontSize: 20, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: scheme.primary,
@@ -89,10 +75,7 @@ class _ProductScreenState extends State<ProductScreen> {
               color: Colors.white,
               onPressed: onCreate,
               icon: Icon(Icons.add, color: scheme.primary),
-              style: IconButton.styleFrom(
-                backgroundColor: scheme.onPrimary,
-                shape: const CircleBorder(),
-              ),
+              style: IconButton.styleFrom(backgroundColor: scheme.onPrimary, shape: const CircleBorder()),
             ),
           ),
         ],
@@ -110,20 +93,13 @@ class _ProductScreenState extends State<ProductScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Filter by Category",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            const Text("Filter by Category", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 8),
                             AppDropdown<Category?>(
                               value: selectedCategory,
                               items: [null, ...Category.values],
                               hintText: "Select Category",
-                              onChanged: (val) =>
-                                  setState(() => selectedCategory = val),
+                              onChanged: (val) => setState(() => selectedCategory = val),
                               labelBuilder: (c) => c == null ? "All" : c.name,
                             ),
                           ],
@@ -134,20 +110,13 @@ class _ProductScreenState extends State<ProductScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Filter by Status",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            const Text("Filter by Status", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 8),
                             AppDropdown<ProductStatus?>(
                               value: selectedStatus,
                               items: [null, ...ProductStatus.values],
                               hintText: "Select Status",
-                              onChanged: (val) =>
-                                  setState(() => selectedStatus = val),
+                              onChanged: (val) => setState(() => selectedStatus = val),
                               labelBuilder: (s) => s == null ? "All" : s.name,
                             ),
                           ],
@@ -158,10 +127,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   const SizedBox(height: 24),
 
                   //List of Product
-                  const Text(
-                    "Products",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                  const Text("Products", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 180,
@@ -170,13 +136,10 @@ class _ProductScreenState extends State<ProductScreen> {
                         : ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: filteredProducts.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 12),
+                            separatorBuilder: (_, __) => const SizedBox(width: 12),
                             itemBuilder: (context, index) {
                               final product = filteredProducts[index];
-                              final imagePath =
-                                  _categoryImages[product.category] ??
-                                  'assets/images/Fruit.jpg';
+                              final imagePath = _categoryImages[product.category] ?? 'assets/images/Fruit.jpg';
 
                               return SizedBox(
                                 width: 160,
@@ -185,24 +148,18 @@ class _ProductScreenState extends State<ProductScreen> {
                                   imagePath: imagePath,
                                   onDeleted: () async {
                                     setState(() {
-                                      _products.removeWhere(
-                                        (p) => p.productId == product.productId,
-                                      );
+                                      _products.removeWhere((p) => p.productId == product.productId);
                                     });
-                                    await _repository.saveProducts(_products);
+                                    await _productRepo.saveProducts(_products);
                                   },
                                   onUpdated: (updatedProduct) async {
                                     setState(() {
-                                      final idx = _products.indexWhere(
-                                        (p) =>
-                                            p.productId ==
-                                            updatedProduct.productId,
-                                      );
+                                      final idx = _products.indexWhere((p) => p.productId == updatedProduct.productId);
                                       if (idx != -1) {
                                         _products[idx] = updatedProduct;
                                       }
                                     });
-                                    await _repository.saveProducts(_products);
+                                    await _productRepo.saveProducts(_products);
                                   },
                                 ),
                               );

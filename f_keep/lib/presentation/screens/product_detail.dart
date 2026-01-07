@@ -31,9 +31,7 @@ class ProductDetail extends StatelessWidget {
 
             // Added Date
             Text(
-              product.addedDate != null
-                  ? "Added Date: ${product.addedDate}"
-                  : "Added Date: N/A",
+              '',
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),

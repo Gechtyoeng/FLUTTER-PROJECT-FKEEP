@@ -3,6 +3,7 @@ import '../repositories/product_history_repo.dart';
 import '../repositories/shopping_repo.dart';
 import '../services/shopping_generation_service.dart';
 import '../../models/shopping_list_model.dart';
+import '../../models/shopping_item_model.dart';
 
 class ShoppingService {
   final ProductRepository productRepo;
@@ -10,12 +11,7 @@ class ShoppingService {
   final ShoppingRepository shoppingRepo;
   final ShoppingGenerationService generationService;
 
-  ShoppingService({
-    required this.productRepo,
-    required this.historyRepo,
-    required this.shoppingRepo,
-    required this.generationService,
-  });
+  ShoppingService({required this.productRepo, required this.historyRepo, required this.shoppingRepo, required this.generationService});
 
   /// Load all shopping lists
   Future<List<ShoppingList>> loadLists() => shoppingRepo.loadLists();
@@ -27,9 +23,18 @@ class ShoppingService {
   Future<ShoppingList> generateSmartShoppingList() async {
     final products = await productRepo.loadProducts();
     final history = await historyRepo.loadHistory();
-    return generationService.generateSmartFromHistory(
-      history: history,
-      products: products,
-    );
+    return generationService.generateSmartFromHistory(history: history, products: products);
+  }
+
+  // Update existing list
+  Future<void> updateList(ShoppingList list) async {
+    await shoppingRepo.updateList(list);
+    
+  }
+
+  /// convert shopping items to product
+  Future<void> convertItemToProduct(ShoppingItem item) async {
+    final product = item.toProduct();
+    await productRepo.addProduct(product);
   }
 }
