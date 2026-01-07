@@ -227,3 +227,29 @@ class FilterButton extends StatelessWidget {
     );
   }
 }
+
+//comfirm dialog widget
+class ConfirmDialog extends StatelessWidget {
+  final String title;
+  final String message;
+  final String cancelText;
+  final String confirmText;
+  final Color confirmColor;
+
+  const ConfirmDialog({super.key, required this.title, required this.message, this.cancelText = 'Cancel', this.confirmText = 'OK', this.confirmColor = Colors.blue});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(cancelText)),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text(confirmText, style: TextStyle(color: confirmColor)),
+        ),
+      ],
+    );
+  }
+}

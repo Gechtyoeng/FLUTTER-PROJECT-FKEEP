@@ -30,6 +30,25 @@ class _ShoppingListDetailState extends State<ShoppingListDetail> {
     }
   }
 
+  void onEdit(int index) async {
+    final editItem = widget.shoppingList.items[index];
+    final result = await showModalBottomSheet<ShoppingItem>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return FractionallySizedBox(heightFactor: 0.6, child: AddShoppingItemBottomSheet(newItem: editItem));
+      },
+    );
+
+    if (result != null) {
+      setState(() {
+        widget.shoppingList.items[index] = result;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,9 +82,13 @@ class _ShoppingListDetailState extends State<ShoppingListDetail> {
         itemBuilder: (context, index) {
           final item = widget.shoppingList.items[index];
           return ShoppingItemTile(
-            name: item.itemName,
-            qty: item.qty.toString(),
-            isChecked: item.isBought,
+            shoppingItem: item,
+            onDelete: () {
+              setState(() {
+                widget.shoppingList.items.removeAt(index);
+              });
+            },
+            onEdit: () => onEdit(index),
             onChanged: (value) {
               setState(() {
                 item.isBought = !item.isBought;
