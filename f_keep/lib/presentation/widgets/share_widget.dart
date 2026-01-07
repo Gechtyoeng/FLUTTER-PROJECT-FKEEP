@@ -10,7 +10,15 @@ class InputField extends StatelessWidget {
   final DateTime? firstDate;
   final DateTime? lastDate;
 
-  const InputField({super.key, required this.controller, required this.hintText, this.validator, this.isDate = false, this.firstDate, this.lastDate});
+  const InputField({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    this.validator,
+    this.isDate = false,
+    this.firstDate,
+    this.lastDate,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +41,8 @@ class InputField extends StatelessWidget {
               );
 
               if (selectedDate != null) {
-                controller.text = "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
+                controller.text =
+                    "${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}";
               }
             }
           : null,
@@ -42,7 +51,10 @@ class InputField extends StatelessWidget {
         hintText: hintText,
         suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 18) : null,
 
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 12,
+        ),
 
         filled: true,
         fillColor: colorScheme.surfaceContainer,
@@ -73,7 +85,15 @@ class AppDropdown<T> extends StatelessWidget {
   final String Function(T) labelBuilder;
   final FormFieldValidator<T>? validator;
 
-  const AppDropdown({super.key, required this.value, required this.items, required this.hintText, required this.onChanged, required this.labelBuilder, this.validator});
+  const AppDropdown({
+    super.key,
+    required this.value,
+    required this.items,
+    required this.hintText,
+    required this.onChanged,
+    required this.labelBuilder,
+    this.validator,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +108,10 @@ class AppDropdown<T> extends StatelessWidget {
         filled: true,
         fillColor: colorScheme.primary,
 
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 12,
+          horizontal: 12,
+        ),
 
         enabledBorder: _border(colorScheme.outline),
         focusedBorder: _border(colorScheme.onPrimary),
@@ -99,9 +122,17 @@ class AppDropdown<T> extends StatelessWidget {
       dropdownColor: colorScheme.onSurfaceVariant,
 
       items: items.map((item) {
+        final rawLabel = labelBuilder(item);
+        final capitalized = rawLabel.isNotEmpty
+            ? rawLabel[0].toUpperCase() + rawLabel.substring(1)
+            : rawLabel;
+
         return DropdownMenuItem<T>(
           value: item,
-          child: Text(labelBuilder(item), style: TextStyle(color: colorScheme.onPrimary)),
+          child: Text(
+            capitalized,
+            style: TextStyle(color: colorScheme.onPrimary),
+          ),
         );
       }).toList(),
       onChanged: onChanged,
@@ -124,7 +155,13 @@ class AppButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
 
-  const AppButton({super.key, required this.label, required this.onPressed, this.backgroundColor, this.textColor});
+  const AppButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.backgroundColor,
+    this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +177,10 @@ class AppButton extends StatelessWidget {
           foregroundColor: textColor ?? colorScheme.onSecondary,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -152,7 +192,12 @@ class FilterButton extends StatelessWidget {
   final String buttonText;
   final bool isSelected;
   final VoidCallback onTap;
-  const FilterButton({super.key, required this.buttonText, required this.isSelected, required this.onTap});
+  const FilterButton({
+    super.key,
+    required this.buttonText,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -160,12 +205,21 @@ class FilterButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? Theme.of(context).colorScheme.primaryContainer : Theme.of(context).colorScheme.surfaceContainer,
-          foregroundColor: isSelected ? Theme.of(context).colorScheme.onPrimaryContainer : Theme.of(context).colorScheme.onSurfaceVariant,
+          backgroundColor: isSelected
+              ? Theme.of(context).colorScheme.primaryContainer
+              : Theme.of(context).colorScheme.surfaceContainer,
+          foregroundColor: isSelected
+              ? Theme.of(context).colorScheme.onPrimaryContainer
+              : Theme.of(context).colorScheme.onSurfaceVariant,
           minimumSize: const Size.fromHeight(40),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadiusGeometry.circular(8),
-            side: BorderSide(color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline, width: 1),
+            side: BorderSide(
+              color: isSelected
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outline,
+              width: 1,
+            ),
           ),
         ),
         child: Text(buttonText),

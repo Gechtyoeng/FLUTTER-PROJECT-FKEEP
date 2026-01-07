@@ -20,21 +20,29 @@ class ProductDetail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Quantity: ${product.qty} ${product.unit.name}",
-                style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 12),
+            // Expire Date
             Text(
               product.expireDate != null
-                  ? "Expires: ${product.expireDate}"
-                  : "No expiry date",
+                  ? "Expire Date: ${product.expireDate}"
+                  : "Expire Date: N/A",
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
-            Text("Category: ${product.category.name}",
-                style: const TextStyle(fontSize: 16)),
+
+            // Added Date
+            Text(
+              product.addedDate != null
+                  ? "Added Date: ${product.addedDate}"
+                  : "Added Date: N/A",
+              style: const TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 12),
-            Text("Status: ${product.status.name}",
-                style: const TextStyle(fontSize: 16)),
+
+            // Quantity Left
+            Text(
+              "Quantity: ${product.qty} ${product.unit.name} Left",
+              style: const TextStyle(fontSize: 16),
+            ),
           ],
         ),
       ),
